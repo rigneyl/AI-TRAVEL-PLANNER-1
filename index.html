@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Travel Planner MVP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --header-height: 80px;
+      --nav-height: 72px;
+      --bg: #f9efe1;
+      --bg-soft: #fff7ea;
+      --card: #ffffff;
+      --accent: #ffb347;
+      --accent-soft: #ffe0b8;
+      --accent-strong: #ff8e4a;
+      --text-main: #222222;
+      --text-muted: #888888;
+      --chip-bg: #fff3df;
+      --chip-text: #8c5b1f;
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #ffe9d0, #f7efe6 40%, #f9f3ea);
+      color: var(--text-main);
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+    }
+
+    .app-shell {
+      position: relative;
+      width: 100%;
+      max-width: 430px;
+      height: 100vh;
+      margin: 0 auto;
+    }
+
+    /* Fixed header */
+    .app-header {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 0;
+      width: 100%;
+      max-width: 430px;
+      height: var(--header-height);
+      padding: 12px 18px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(16px);
+      background: linear-gradient(to bottom, rgba(249, 237, 219, 0.92), rgba(249, 237, 219, 0.75));
+      z-index: 20;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      max-width: 80%;
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background-image: linear-gradient(135deg, #ffd49f, #ff9f9f);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .header-text-main {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .header-text-name {
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .icon-btn {
+      border: none;
+      background: #ffffff;
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      font-size: 17px;
+      cursor: pointer;
+    }
+
+    /* Main scroll area */
+    .app-content {
+      position: relative;
+      height: 100vh;
+      padding: calc(var(--header-height) + 12px) 16px calc(var(--nav-height) + 16px);
+      overflow-y: auto;
+      scroll-behavior: smooth;
+      max-width: 430px;
+      margin: 0 auto;
+    }
+
+    .app-content::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+
+    .screen {
+      display: none;
+      padding-bottom: 32px;
+    }
+
+    .screen.active {
+      display: block;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Hero AI planner card */
+    .hero-card {
+      background: radial-gradient(circle at top left, #ffe0b6, #ffc6b7 45%, #f6efe8 85%);
+      border-radius: var(--radius-lg);
+      padding: 16px 18px 14px;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-title {
+      font-size: 16px;
+      font-weight: 600;
+      max-width: 70%;
+    }
+
+    .hero-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      max-width: 70%;
+    }
+
+    .hero-illustration {
+      position: absolute;
+      right: -4px;
+      bottom: -10px;
+      width: 150px;
+      height: 110px;
+      background-image: linear-gradient(135deg, #f6e9d8, #fbe6d5);
+      border-radius: 26px;
+      overflow: hidden;
+    }
+
+    .hero-illustration::before,
+    .hero-illustration::after {
+      content: "";
+      position: absolute;
+      border-radius: 30px;
+    }
+
+    .hero-illustration::before {
+      left: 8%;
+      bottom: -6%;
+      width: 52%;
+      height: 70%;
+      background: linear-gradient(135deg, #f09a5d, #f4c255);
+    }
+
+    .hero-illustration::after {
+      right: -20%;
+      bottom: -10%;
+      width: 80%;
+      height: 80%;
+      background: radial-gradient(circle at top left, #ffcf89, #f88666 55%, #e667aa 90%);
+      opacity: 0.7;
+    }
+
+    .hero-ai-input {
+      margin-top: 2px;
+      background: rgba(255, 255, 255, 0.92);
+      padding: 8px 10px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .hero-ai-input span {
+      font-size: 12px;
+      color: var(--text-muted);
+      flex: 1;
+    }
+
+    .hero-ai-btn {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #222;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    /* Category chips */
+    .chip-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .chip {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 6px 12px;
+      background: var(--chip-bg);
+      color: var(--chip-text);
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .chip-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Section header */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+      margin-top: 4px;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .section-link {
+      font-size: 11px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    /* Trip cards */
+    .trip-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .trip-card {
+      background: var(--bg-soft);
+      border-radius: 18px;
+      padding: 10px;
+      display: flex;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    .trip-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.06);
+    }
+
+    .trip-thumb {
+      width: 76px;
+      height: 62px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #fbe2bc, #ffd0d2);
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .trip-thumb::before {
+      content: "";
+      position: absolute;
+      inset: 12px 10px;
+      border-radius: 18px;
+      background-image: linear-gradient(135deg, #6fb7ff, #ff9baa);
+      opacity: 0.85;
+    }
+
+    .trip-thumb.japan::before {
+      background-image: linear-gradient(135deg, #6fc1ff, #ffa8c7);
+    }
+
+    .trip-thumb.italy::before {
+      background-image: linear-gradient(135deg, #ffbe7a, #ff8d84);
+    }
+
+    .trip-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .trip-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .trip-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+
+    .trip-price-label {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .trip-price {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .trip-chevron {
+      font-size: 16px;
+      color: var(--text-muted);
+      align-self: center;
+    }
+
+    .primary-cta {
+      margin-top: 10px;
+      width: 100%;
+      border-radius: 999px;
+      padding: 13px 16px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      background: #222222;
+      color: #ffffff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .primary-cta span {
+      font-size: 15px;
+    }
+
+    /* Trip detail screen */
+    .hero-image-lg {
+      width: 100%;
+      border-radius: 24px;
+      height: 180px;
+      background: linear-gradient(135deg, #6fc1ff, #ffa6cc);
+      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .hero-image-lg::before {
+      content: "";
+      position: absolute;
+      inset: 18px 22px;
+      border-radius: 28px;
+      background-image: radial-gradient(circle at top left, #fbe0ff, #7bc6ff 40%, #ff9e8f 80%);
+      opacity: 0.95;
+    }
+
+    .pill-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .meta-pill {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.9);
+      font-size: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .trip-detail-title {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .trip-detail-price {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .trip-detail-price span {
+      font-weight: 600;
+      color: var(--accent-strong);
+      font-size: 14px;
+    }
+
+    .trip-description {
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .tag-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: #f4f2ff;
+      color: #5e54c5;
+      font-size: 10px;
+      font-weight: 500;
+    }
+
+    .info-card {
+      background: var(--card);
+      border-radius: 18px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 8px 26px rgba(0, 0, 0, 0.04);
+    }
+
+    .info-card-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .info-card-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .itinerary-item {
+      font-size: 11px;
+      padding: 6px 0;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .itinerary-dot {
+      width: 20px;
+      color: var(--accent-strong);
+      font-weight: 600;
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+
+    .secondary-cta-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .btn-ghost,
+    .btn-solid {
+      flex: 1;
+      border-radius: 999px;
+      padding: 11px 10px;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-ghost {
+      background: #ffffff;
+      color: #222;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    .btn-solid {
+      background: linear-gradient(135deg, #ffb347, #ff8e4a);
+      color: #fff;
+      box-shadow: 0 14px 30px rgba(255, 136, 58, 0.4);
+    }
+
+    /* Stats screen */
+    .stats-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    .stats-card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 12px 14px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.05);
+    }
+
+    .stats-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .stats-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .tabs {
+      display: inline-flex;
+      background: #f4f1ff;
+      border-radius: 999px;
+      padding: 3px;
+      gap: 4px;
+      font-size: 10px;
+    }
+
+    .tab-pill {
+      padding: 4px 8px;
+      border-radius: 999px;
+      cursor: pointer;
+      color: #7d73cc;
+    }
+
+    .tab-pill.active {
+      background: #ffffff;
+      font-weight: 600;
+    }
+
+    .stat-badges {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 11px;
+    }
+
+    .stat-badge {
+      flex: 1;
+      background: #fff7e8;
+      border-radius: 14px;
+      padding: 8px 10px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      padding-top: 6px;
+    }
+
+    .bar-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 9px;
+      color: var(--text-muted);
+    }
+
+    .bar-stack {
+      width: 14px;
+      border-radius: 999px;
+      background: #ffe3c4;
+      display: flex;
+      flex-direction: column-reverse;
+      overflow: hidden;
+    }
+
+    .bar-income {
+      background: #ffb347;
+    }
+
+    .bar-expense {
+      background: #9bd5a5;
+    }
+
+    .bar-income,
+    .bar-expense {
+      width: 100%;
+    }
+
+    .line-chart {
+      margin-top: 8px;
+      height: 70px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #fffaf0, #ffe7d2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .line-chart-path {
+      position: absolute;
+      inset: 10px 14px;
+      border-radius: 20px;
+      background-image: linear-gradient(135deg, rgba(255, 141, 74, 0.12), rgba(255, 218, 160, 0.05));
+    }
+
+    .line-pill {
+      position: absolute;
+      right: 20px;
+      top: 18px;
+      padding: 4px 7px;
+      border-radius: 999px;
+      background: #ffb347;
+      color: #fff;
+      font-size: 9px;
+    }
+
+    .line-dots {
+      position: absolute;
+      inset: 24px 14px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .line-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ff8e4a;
+      box-shadow: 0 0 0 5px rgba(255, 158, 105, 0.3);
+    }
+
+    .line-days {
+      position: absolute;
+      inset: auto 16px 6px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      color: var(--text-muted);
+    }
+
+    /* Profile */
+    .profile-card {
+      background: var(--card);
+      border-radius: 22px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 14px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .profile-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      background: radial-gradient(circle at top left, #ffda9f, #ff94aa);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .profile-name {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .profile-email {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .chip-small {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 9px;
+      background: #eef5ff;
+      color: #4057a5;
+    }
+
+    .settings-list {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 10px 0;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .settings-item {
+      padding: 10px 16px;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .settings-item + .settings-item {
+      border-top: 1px solid #f1ece3;
+    }
+
+    .settings-item span {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Bottom nav */
+    .bottom-nav {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 10px;
+      width: 100%;
+      max-width: 430px;
+      padding: 0 16px;
+      z-index: 20;
+    }
+
+    .bottom-nav-inner {
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 999px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.12);
+      display: flex;
+      padding: 6px 8px;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-item {
+      flex: 1;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      padding: 6px 2px;
+      font-size: 10px;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      cursor: pointer;
+    }
+
+    .nav-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      background: transparent;
+    }
+
+    .nav-item.active {
+      color: #222222;
+      font-weight: 600;
+    }
+
+    .nav-item.active .nav-icon {
+      background: #222222;
+      color: #ffffff;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    /* AI Modal */
+    .ai-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      backdrop-filter: blur(14px);
+      background: rgba(0, 0, 0, 0.18);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 30;
+    }
+
+    .ai-modal {
+      width: 100%;
+      max-width: 360px;
+      background: #fff9f0;
+      border-radius: 24px;
+      padding: 16px 18px 14px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .ai-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .ai-modal-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .ai-modal-body {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .ai-suggestions {
+      margin: 0;
+      padding-left: 16px;
+      font-size: 11px;
+      margin-bottom: 10px;
+    }
+
+    .chip-destination {
+      display: inline-flex;
+      margin-top: 2px;
+      padding: 4px 7px;
+      border-radius: 999px;
+      background: #fff;
+      font-size: 10px;
+      gap: 4px;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 2px solid #ffe0bb;
+      border-top-color: #ff9b50;
+      animation: spin 0.7s linear infinite;
+      margin-right: 6px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .ai-modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .btn-small {
+      border-radius: 999px;
+      border: none;
+      padding: 7px 12px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .btn-small-secondary {
+      background: transparent;
+      color: var(--text-muted);
+    }
+
+    .btn-small-primary {
+      background: #222222;
+      color: #ffffff;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Desktop tweaks */
+    @media (min-width: 900px) {
+      body {
+        align-items: center;
+      }
+      .app-shell {
+        border-radius: 38px;
+        overflow: hidden;
+        box-shadow: 0 30px 80px rgba(0,0,0,0.18);
+      }
+      .app-header {
+        top: 0;
+      }
+      .bottom-nav {
+        bottom: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="avatar">M</div>
+        <div>
+          <div class="header-text-main">Hello,</div>
+          <div class="header-text-name">Marry Cruz</div>
+        </div>
+      </div>
+      <button class="icon-btn" aria-label="Notifications">
+        🔔
+      </button>
+    </header>
+
+    <!-- Main content -->
+    <main class="app-content" id="appContent">
+      <!-- HOME SCREEN -->
+      <section class="screen active" id="screen-home">
+        <section class="hero-card">
+          <div class="hero-title">Let’s plan your next adventure with AI!</div>
+          <div class="hero-sub">Tell us your mood, budget, and dates—your smart itinerary is one tap away.</div>
+
+          <div class="hero-illustration" aria-hidden="true"></div>
+
+          <div class="hero-ai-input" id="startAiPlan">
+            <span>Start a plan with AI…</span>
+            <button class="hero-ai-btn">Start</button>
+          </div>
+        </section>
+
+        <!-- Category chips -->
+        <div class="chip-row">
+          <div class="chip">
+            <div class="chip-icon">🏨</div>
+            Hotel
+          </div>
+          <div class="chip">
+            <div class="chip-icon">✈️</div>
+            Flight
+          </div>
+          <div class="chip">
+            <div class="chip-icon">🗺️</div>
+            Trips
+          </div>
+          <div class="chip">
+            <div class="chip-icon">🎭</div>
+            Experiences
+          </div>
+        </div>
+
+        <!-- Popular Travel -->
+        <div class="section-header">
+          <div class="section-title">Popular Travel</div>
+          <div class="section-link">See All</div>
+        </div>
+
+        <div class="trip-list">
+          <article class="trip-card" data-trip-id="japan">
+            <div class="trip-thumb japan"></div>
+            <div class="trip-info">
+              <div class="trip-title">6 Days Japan Heritage &amp; Culinary Tour</div>
+              <div class="trip-meta-row">
+                <span>3–5 Person</span>
+                <div class="dot"></div>
+                <span>11 Days</span>
+              </div>
+              <div class="trip-price-row">
+                <span class="trip-price-label">Start from</span>
+                <span class="trip-price"> $1,234 / Person</span>
+              </div>
+            </div>
+            <div class="trip-chevron">›</div>
+          </article>
+
+          <article class="trip-card" data-trip-id="italy">
+            <div class="trip-thumb italy"></div>
+            <div class="trip-info">
+              <div class="trip-title">Italian Highlights: Rome, Florence &amp; Venice</div>
+              <div class="trip-meta-row">
+                <span>2–4 Person</span>
+                <div class="dot"></div>
+                <span>8 Days</span>
+              </div>
+              <div class="trip-price-row">
+                <span class="trip-price-label">Start from</span>
+                <span class="trip-price"> $1,499 / Person</span>
+              </div>
+            </div>
+            <div class="trip-chevron">›</div>
+          </article>
+        </div>
+
+        <button class="primary-cta" id="homePlanBtn">
+          <span>Let’s Plan</span> ✨
+        </button>
+      </section>
+
+      <!-- TRIP DETAIL SCREEN -->
+      <section class="screen" id="screen-trip">
+        <div class="hero-image-lg" aria-hidden="true"></div>
+
+        <div class="pill-row">
+          <div class="meta-pill">
+            <span>👥</span> <span id="tripPeople">3–5 Person</span>
+          </div>
+          <div class="meta-pill">
+            <span>🗓️</span> <span id="tripDays">11 Days</span>
+          </div>
+          <div class="meta-pill">
+            <span>📍</span> <span id="tripLocation">Japan</span>
+          </div>
+        </div>
+
+        <h1 class="trip-detail-title" id="tripTitle">6 Days Japan Heritage &amp; Culinary Tour</h1>
+        <div class="trip-detail-price">
+          From <span id="tripPrice">$1,234</span> / person ·
+          <span id="tripSeason">Best in Spring</span>
+        </div>
+
+        <p class="trip-description" id="tripDescription">
+          Discover Japan’s timeless heritage and rich culinary traditions on a curated route through Tokyo, Kyoto and Osaka. Explore historic temples, neon streets and local markets while tasting authentic regional flavors.
+        </p>
+
+        <div class="tag-row" id="tripTags">
+          <div class="tag">Foodie-friendly</div>
+          <div class="tag">Cultural landmarks</div>
+          <div class="tag">AI-optimized route</div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-title">
+            <span>Today’s AI Itinerary</span>
+            <span style="font-size:11px; color:var(--accent-strong);">Powered by AI ⚡</span>
+          </div>
+          <div class="info-card-sub">Highlights based on your mood, budget &amp; pace.</div>
+
+          <div class="itinerary-item">
+            <div class="itinerary-dot">D1</div>
+            <div>
+              <strong>Tokyo Arrival &amp; Street Bites</strong><br />
+              Check into Shibuya, explore local izakaya and neon crossings with a short guided walk.
+            </div>
+          </div>
+
+          <div class="itinerary-item">
+            <div class="itinerary-dot">D2</div>
+            <div>
+              <strong>Temples &amp; Tea Ceremony</strong><br />
+              Morning trip to Asakusa &amp; Senso-ji, followed by a calm tea experience tailored to your interests.
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-title">
+            <span>Smart Planning</span>
+            <span style="font-size:11px; color:var(--text-muted);">Weather, crowds &amp; transit checked</span>
+          </div>
+          <div class="itinerary-item">
+            <div class="itinerary-dot">✓</div>
+            <div>Ideal travel windows suggested to avoid rain &amp; peak tourist hours.</div>
+          </div>
+          <div class="itinerary-item">
+            <div class="itinerary-dot">✓</div>
+            <div>Metro and JR routes pre-loaded for offline access.</div>
+          </div>
+        </div>
+
+        <div class="secondary-cta-row">
+          <button class="btn-ghost" id="editTripBtn">Edit with AI</button>
+          <button class="btn-solid">Start Plan</button>
+        </div>
+      </section>
+
+      <!-- STATS SCREEN -->
+      <section class="screen" id="screen-stats">
+        <h2 class="section-title" style="margin-bottom:8px;">Travel Stats</h2>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">
+          See how you’ve been traveling this year and how your budget behaves across trips.
+        </p>
+
+        <div class="stats-grid">
+          <div class="stats-card">
+            <div class="stats-header">
+              <div class="stats-title">Budget Overview</div>
+              <div class="tabs">
+                <div class="tab-pill active">Week</div>
+                <div class="tab-pill">Month</div>
+              </div>
+            </div>
+
+            <div class="stat-badges">
+              <div class="stat-badge">
+                <div class="stat-label">Income Budget</div>
+                <div class="stat-value">$300</div>
+              </div>
+              <div class="stat-badge" style="background:#e9f9ed;">
+                <div class="stat-label">Spend Budget</div>
+                <div class="stat-value">$280</div>
+              </div>
+            </div>
+
+            <div class="bar-chart">
+              <!-- Static fake data -->
+              <div class="bar-group">
+                <div class="bar-stack" style="height:68px;">
+                  <div class="bar-income" style="height:45%;"></div>
+                  <div class="bar-expense" style="height:35%;"></div>
+                </div>
+                <span>S</span>
+              </div>
+              <div class="bar-group">
+                <div class="bar-stack" style="height:80px;">
+                  <div class="bar-income" style="height:55%;"></div>
+                  <div class="bar-expense" style="height:35%;"></div>
+                </div>
+                <span>M</span>
+              </div>
+              <div class="bar-group">
+                <div class="bar-stack" style="height:74px;">
+                  <div class="bar-income" style="height:52%;"></div>
+                  <div class="bar-expense" style="height:30%;"></div>
+                </div>
+                <span>T</span>
+              </div>
+              <div class="bar-group">
+                <div class="bar-stack" style="height:60px;">
+                  <div class="bar-income" style="height:40%;"></div>
+                  <div class="bar-expense" style="height:30%;"></div>
+                </div>
+                <span>W</span>
+              </div>
+              <div class="bar-group">
+                <div class="bar-stack" style="height:78px;">
+                  <div class="bar-income" style="height:60%;"></div>
+                  <div class="bar-expense" style="height:25%;"></div>
+                </div>
+                <span>T</span>
+              </div>
+              <div class="bar-group">
+                <div class="bar-stack" style="height:66px;">
+                  <div class="bar-income" style="height:50%;"></div>
+                  <div class="bar-expense" style="height:25%;"></div>
+                </div>
+                <span>F</span>
+              </div>
+              <div class="bar-group">
+                <div class="bar-stack" style="height:52px;">
+                  <div class="bar-income" style="height:35%;"></div>
+                  <div class="bar-expense" style="height:25%;"></div>
+                </div>
+                <span>S</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stats-card">
+            <div class="stats-header">
+              <div class="stats-title">Places Visited</div>
+              <span style="font-size:11px; color:var(--text-muted);">32 total</span>
+            </div>
+
+            <div class="line-chart">
+              <div class="line-chart-path"></div>
+              <div class="line-pill">2 trips this week</div>
+              <div class="line-dots">
+                <div class="line-dot"></div>
+                <div class="line-dot" style="margin-top:-10px;"></div>
+                <div class="line-dot" style="margin-top:-4px;"></div>
+                <div class="line-dot" style="margin-top:-16px;"></div>
+                <div class="line-dot" style="margin-top:-2px;"></div>
+                <div class="line-dot" style="margin-top:-8px;"></div>
+                <div class="line-dot"></div>
+              </div>
+              <div class="line-days">
+                <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROFILE SCREEN -->
+      <section class="screen" id="screen-profile">
+        <h2 class="section-title" style="margin-bottom:10px;">Profile</h2>
+
+        <div class="profile-card">
+          <div class="profile-avatar">M</div>
+          <div>
+            <div class="profile-name">Marry Cruz</div>
+            <div class="profile-email">marry.cruz@example.com</div>
+            <div class="chip-small">AI Travel Member · Gold</div>
+          </div>
+        </div>
+
+        <div class="settings-list">
+          <div class="settings-item">
+            Trip preferences
+            <span>Food, Culture, 7–10 days</span>
+          </div>
+          <div class="settings-item">
+            Budget range
+            <span>$1,000 – $2,500</span>
+          </div>
+          <div class="settings-item">
+            Notification settings
+            <span>Smart alerts</span>
+          </div>
+          <div class="settings-item">
+            Help &amp; support
+            <span>FAQs &amp; chat</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom navigation -->
+    <nav class="bottom-nav">
+      <div class="bottom-nav-inner">
+        <button class="nav-item active" data-screen="home">
+          <div class="nav-icon">🏠</div>
+          Home
+        </button>
+        <button class="nav-item" data-screen="trip">
+          <div class="nav-icon">🧳</div>
+          Trips
+        </button>
+        <button class="nav-item" data-screen="stats">
+          <div class="nav-icon">📊</div>
+          Stats
+        </button>
+        <button class="nav-item" data-screen="profile">
+          <div class="nav-icon">👤</div>
+          Profile
+        </button>
+      </div>
+    </nav>
+
+    <!-- AI modal -->
+    <div class="ai-modal-backdrop hidden" id="aiModal">
+      <div class="ai-modal">
+        <div class="ai-modal-header">
+          <div class="ai-modal-title">
+            <div style="display:flex; align-items:center;">
+              <div class="spinner"></div>
+              Planning with AI…
+            </div>
+          </div>
+          <button class="icon-btn" style="box-shadow:none; background:#ffe7d0; width:30px; height:30px;" id="closeAiModal">✕</button>
+        </div>
+        <div class="ai-modal-body">
+          We’ve drafted a smart itinerary based on your typical preferences:
+        </div>
+        <ul class="ai-suggestions">
+          <li>7 days exploring <strong>Tokyo &amp; Kyoto</strong> with 2 slow days.</li>
+          <li>Mid-range boutique stays near public transport.</li>
+          <li>Food, culture and light nature hikes—no intense trekking.</li>
+        </ul>
+        <div class="chip-destination">
+          ✨ Suggested: <strong>Spring in Japan</strong>
+        </div>
+        <div class="ai-modal-footer">
+          <button class="btn-small btn-small-secondary" id="aiEditBtn">Adjust</button>
+          <button class="btn-small btn-small-primary" id="aiUsePlanBtn">Use this plan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simple in-memory trip data
+    const tripData = {
+      japan: {
+        title: "6 Days Japan Heritage & Culinary Tour",
+        people: "3–5 Person",
+        days: "11 Days",
+        location: "Japan",
+        price: "$1,234",
+        season: "Best in Spring",
+        description:
+          "Discover Japan’s timeless heritage and rich culinary traditions on a curated route through Tokyo, Kyoto and Osaka. Explore shrines, neon streets and local markets while tasting authentic regional dishes.",
+        tags: ["Foodie-friendly", "Cultural landmarks", "AI-optimized route"]
+      },
+      italy: {
+        title: "Italian Highlights: Rome, Florence & Venice",
+        people: "2–4 Person",
+        days: "8 Days",
+        location: "Italy",
+        price: "$1,499",
+        season: "Best in Autumn",
+        description:
+          "Wander through cobbled streets, piazzas and coastal views in a relaxed loop from Rome to Florence and Venice. Balance famous landmarks with hidden trattoria and sunset walks.",
+        tags: ["Slow travel", "City-hopping", "Romantic escapes"]
+      }
+    };
+
+    const screens = {
+      home: document.getElementById("screen-home"),
+      trip: document.getElementById("screen-trip"),
+      stats: document.getElementById("screen-stats"),
+      profile: document.getElementById("screen-profile")
+    };
+
+    const appContent = document.getElementById("appContent");
+
+    function showScreen(name) {
+      Object.values(screens).forEach((el) => el.classList.remove("active"));
+      screens[name].classList.add("active");
+      appContent.scrollTo({ top: 0, behavior: "smooth" });
+
+      document.querySelectorAll(".nav-item").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.screen === name);
+      });
+    }
+
+    // Bottom nav
+    document.querySelectorAll(".nav-item").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.screen;
+        showScreen(target);
+      });
+    });
+
+    // Trip cards click -> populate detail
+    document.querySelectorAll(".trip-card").forEach((card) => {
+      card.addEventListener("click", () => {
+        const id = card.dataset.tripId;
+        const data = tripData[id];
+        if (!data) return;
+
+        document.getElementById("tripTitle").textContent = data.title;
+        document.getElementById("tripPeople").textContent = data.people;
+        document.getElementById("tripDays").textContent = data.days;
+        document.getElementById("tripLocation").textContent = data.location;
+        document.getElementById("tripPrice").textContent = data.price;
+        document.getElementById("tripSeason").textContent = data.season;
+        document.getElementById("tripDescription").textContent = data.description;
+
+        const tagsContainer = document.getElementById("tripTags");
+        tagsContainer.innerHTML = "";
+        data.tags.forEach((tag) => {
+          const el = document.createElement("div");
+          el.className = "tag";
+          el.textContent = tag;
+          tagsContainer.appendChild(el);
+        });
+
+        showScreen("trip");
+      });
+    });
+
+    // Home CTA -> AI modal
+    const aiModal = document.getElementById("aiModal");
+    const startAiButtons = [document.getElementById("startAiPlan"), document.getElementById("homePlanBtn")];
+
+    startAiButtons.forEach((el) => {
+      el.addEventListener("click", () => {
+        aiModal.classList.remove("hidden");
+      });
+    });
+
+    document.getElementById("closeAiModal").addEventListener("click", () => {
+      aiModal.classList.add("hidden");
+    });
+
+    // Use AI plan -> jump to trip screen
+    document.getElementById("aiUsePlanBtn").addEventListener("click", () => {
+      aiModal.classList.add("hidden");
+      // Default to Japan trip
+      const japanCard = document.querySelector('[data-trip-id="japan"]');
+      if (japanCard) japanCard.click();
+    });
+
+    // Edit with AI / Adjust buttons just focus trip screen
+    document.getElementById("editTripBtn").addEventListener("click", () => {
+      aiModal.classList.remove("hidden");
+    });
+
+    document.getElementById("aiEditBtn").addEventListener("click", () => {
+      // In a real app, this would open filters. Here we just close.
+      aiModal.classList.add("hidden");
+    });
+  </script>
+</body>
+</html>
